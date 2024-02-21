@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather app</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat&family=Roboto&display=swap');
+        
+
+        body {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Montserrat', sans-serif;
+            background-image: url(images/double-rainbow2.jpg);
+            background-size: cover;
+            background-repeat: no-repeat;
+            height: 95vh;
+        }
+
+        #weather {
+            background-image: url(images/background.jpg);
+            background-size: cover;
+            width: 700px;
+            height: 350px;
+            padding: 1rem;
+            text-align: center;
+            border-radius: 25px;
+            background-position: bottom;
+        }
+
+        #grad {
+            font-size: 1.5rem;
+            font-family: 'Montserrat', sans-serif;
+            margin-bottom: 1rem;
+            border-radius: 25px;
+            border: none;
+            padding-left: 0.5rem;
+        }
+
+        #trazi, #spremi {
+            font-size: 1.2rem;
+            font-family: 'Montserrat', sans-serif;
+            padding: 0.3rem 0.4rem 0.3rem 0.4rem;
+            background-color: rgb(63, 129, 194);
+            color: white;
+            border: none;
+            transition: 0.5s all ease;
+            border-radius: 25px;
+            margin: 0.5rem;
+            text-shadow: 2px 2px 8px grey;
+        }
+
+        #trazi {
+            margin-right: 0.5rem;
+        }
+
+        #trazi:hover, #spremi:hover {
+            background-color: rgb(84, 212, 255);
+            color: black;
+
+        }
+
+        #temp {
+            font-size: 6rem;
+            color: white;
+            padding-right: 1rem;
+            font-weight: 600;
+        }
+
+        #osjet {
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        #vrijeme, #vjetar {
+            font-size: 1.5rem;
+            color: white;
+            font-weight: 600;
+        }
+
+        #vrijeme {
+            padding-right: 2rem;
+        }
+
+        #greska {
+            color: white;
+            font-size: 1.5rem;
+            display: none;
+            margin: 0;
+            text-shadow: 2px 2px 8px black;
+        }
+
+        #lokacije {
+            margin-left: 1rem;
+            border-radius: 25px;
+            color: white;
+            height: 382px;
+            background-image: url(images/background.jpg);
+            background-size: cover;
+            text-shadow: 2px 2px 8px black;
+        }
+
+        ul, #ukloni {
+            padding: 0.5rem;
+            font-weight: 600;
+        }
+
+        li {
+            font-size: 1.2rem;
+            padding: 0.5rem;
+            list-style-type: none;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        li:hover, #ukloni:hover {
+            color: rgb(251, 226, 180);
+        }
+
+        #ukloni {
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        #celsius {
+            font-size: 5rem;
+        }
+
+        span {
+            text-shadow: 2px 2px 8px black;
+        }
+
+        @media screen and (max-width: 400px) {
+            body {
+                height: auto;
+            }
+
+            #lokacije {
+                text-align: center;
+                margin: 0;
+            }
+
+            #weather {
+                width: 300px;
+                height: 500px;
+            }
+
+            #vrijeme, #vjetar {
+                font-size: 1.1rem;
+            }
+
+            #vrijeme img, #vjetar img{
+                width: 45px;
+            }
+
+            #temp {
+                font-size: 4.5rem;
+            }
+
+            #celsius {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="weather">
+        <input type="text" placeholder="Unesite grad" id="grad">
+        <button id="trazi" onclick="kakvoJeVrijeme()">Dohvati vrijeme</button>
+        <button id="spremi" onclick="spremiLokaciju()">Spremi lokaciju</button><br>
+        <p id="greska"></p>
+        <span id="temp"></span> <span id="osjet"></span>
+        <br> <span id="vrijeme"></span> <span id="vjetar"></span>
+    </div>
+
+    <div id="lokacije">
+        <ul id="lista">Spremljene lokacije:</ul>
+        <p id="ukloni" onclick="ukloniLokacije()">Ukloni sve lokacije</p>
+    </div>
+
+    <script>
+        function kakvoJeVrijeme() {
+            var imeGrada = document.getElementById("grad").value;
+            var APIkey = '43ec09f1ed49791a59bb24b79103e345'
+
+            if(imeGrada.trim() == "") {
+                document.getElementById("greska").setAttribute("style", "display: block");
+                document.getElementById("greska").innerHTML = "Unesite grad!";
+                document.getElementById("temp").innerHTML = "";
+                document.getElementById("vrijeme").innerHTML = "";
+            } else {
+            document.getElementById("greska").setAttribute("style", "display: none");
+
+            async function dohvatiVrijeme() {
+                try {
+                    let response1 = await fetch(`https://api.openweathermap.org/geo/1.0/direct?q=${imeGrada}&appid=${APIkey}`);
+                    let locationData = await response1.json();
+                    
+                    let lat = locationData[0].lat;
+                    let lon = locationData[0].lon;
+
+                    let response2 = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${APIkey}&units=metric`);
+                    let data = await response2.json();
+
+                    var temp = parseInt(data.main.temp);
+                    var weather = data.weather[0].main;
+                    var wind = parseInt(data.wind.speed);
+                    var feelsLike = parseInt(data.main.feels_like);
+       
+                    console.log(temp);
+                    console.log(weather);
+                    console.log(wind);
+                    console.log(feelsLike);
+
+                    document.getElementById("temp").innerHTML = temp + "<span id='celsius'><sup>°C</sup></span>";
+
+                    var image;
+                    switch(weather) {
+                        case "Clear":
+                            image = "<img src='images/Clear.png'> Vedro"
+                            break;
+                        case "Clouds":
+                            image = "<img src='images/Clouds.png'> Oblačno"
+                            break;
+                        case "Rain":
+                        case "Drizzle":
+                            image = "<img src='images/Rain.png'> Kiša"
+                            break;
+                        case "Thunderstorm":
+                            image = "<img src='images/Thunderstorm.png'> Nevrijeme"
+                            break;
+                        case "Snow":
+                            image = "<img src='images/Snow.png'> Snijeg"
+                            break;
+                        case "Mist":
+                            image = "<img src='images/Mist.png' width='64'> Magla"
+                            break;
+                    }
+
+                    document.getElementById("vrijeme").innerHTML = image;
+
+                    document.getElementById("vjetar").innerHTML = "<img src=images/wind1.png> " + wind + " km/h"; 
+
+                    document.getElementById("osjet").innerHTML = "<b>Osjet: " + feelsLike + "<sup>°C</sup></b>";
+
+                }
+                catch(error) {
+                    console.log("Greška: " + error);
+                }
+            }
+            
+        dohvatiVrijeme();
+        }}
+
+
+        var array = [];
+
+        function spremiLokaciju() {
+            var imeGrada = document.getElementById("grad").value;
+            
+            if (!array.includes(imeGrada) && imeGrada.trim() != "") {
+                array.push(imeGrada);
+                document.getElementById("lista").innerHTML += `<li onclick="aktivirajIme('${imeGrada}')">${imeGrada}</li>`;
+            } else if (array.includes(imeGrada)) {
+                document.getElementById("greska").setAttribute("style", "display: block");
+                document.getElementById("greska").innerHTML = "Lokacija je već spremljena!";
+            } else if (imeGrada.trim() != "") {
+                document.getElementById("greska").setAttribute("style", "display: block");
+                document.getElementById("greska").innerHTML = "Unesite grad!";
+            }
+
+            console.log(array);
+
+            localStorage.setItem("locationlist", JSON.stringify(array));
+        }
+
+
+        if (localStorage.getItem("locationlist") != null) {
+            array = JSON.parse(localStorage.getItem("locationlist"));
+            for (i = 0; i < array.length; i++) {
+                document.getElementById("lista").innerHTML += `<li onclick="aktivirajIme('${array[i]}')">${array[i]}</li>`;
+            }
+        } else {
+            array = [];
+        }
+        
+        function aktivirajIme(ime) {
+            document.getElementById("grad").value = ime;
+            kakvoJeVrijeme();
+        }
+
+        function ukloniLokacije() {
+            array = [];
+            localStorage.setItem("locationlist", JSON.stringify(array));
+            window.location.reload();
+        }
+
+    </script>
+</body>
+</html>
